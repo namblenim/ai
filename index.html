@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SINGLE-ARM — Prototype Launcher</title>
+    <style>
+        body{background:#0f1720;color:#e6eef8;font-family:Inter,system-ui,Arial;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+        .card{background:#111827;padding:28px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,.6);width:540px}
+        h1{margin:0 0 12px;font-size:20px}
+        p{color:#9aa7b8;margin:6px 0 18px}
+        a.button{display:inline-block;margin:6px 8px 0 0;padding:10px 14px;background:#0ea5a4;color:#021024;border-radius:8px;text-decoration:none;font-weight:600}
+        code{background:#0b1220;padding:6px 8px;border-radius:6px;color:#9ad3d1}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>SINGLE-ARM — Prototype Launcher</h1>
+        <p>두 개의 프로토타입 맵을 로컬에서 바로 열어테스트할 수 있습니다.</p>
+
+        <div>
+            <a class="button" href="map-escape.html" target="_blank">맵 1 — The Escape</a>
+            <a class="button" href="map-ascent.html" target="_blank">맵 2 — The Ascent</a>
+            <a class="button" href="map-fall.html" target="_blank">맵 3 — The Fall</a>
+        </div>
+
+        <p style="margin-top:18px">로컬에서 실행하려면 간단히 다음 명령으로 정적 서버를 실행하세요:</p>
+        <pre><code>python -m http.server 8000</code></pre>
+        <p style="margin-top:8px;color:#7f8fa4">그런 다음 브라우저에서 <strong>http://localhost:8000/</strong>로 열어보세요.</p>
+    </div>
+</body>
+</html>
