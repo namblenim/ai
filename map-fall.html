@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SINGLE-ARM — The Fall (추락)</title>
+    <style>
+        body{background:#0f1720;color:#e6eef8;font-family:Inter,system-ui,Arial;margin:0;display:flex;align-items:center;justify-content:center;height:100vh}
+        #stage{width:900px;height:450px;background:#172033;border-radius:8px;position:relative;overflow:hidden}
+        .ground{position:absolute;background:#2b3946;bottom:0;height:120px;width:100%}
+        .platform{position:absolute;background:#3b4a57;border:3px solid #1f2a33}
+        #left-plat{left:40px;bottom:120px;width:300px;height:180px}
+        #right-plat{right:40px;bottom:120px;width:300px;height:260px}
+        #gap{position:absolute;left:360px;bottom:120px;width:180px;height:260px;background:transparent}
+        /* robot */
+        #robot{position:absolute;width:80px;height:48px;bottom:300px;left:120px;transition:none}
+        .body{width:80px;height:35px;background:#7f8c8d;border:3px solid #2c3e50;border-radius:4px;position:absolute;bottom:0}
+        .arm{position:absolute;left:40px;bottom:8px;width:24px;height:4px;background:#22343f;border-radius:2px}
+        #status{position:absolute;left:12px;top:12px;color:#cbd5e1}
+        .btn{position:absolute;right:12px;top:12px;padding:6px 10px;background:#06b6d4;color:#021024;border-radius:6px;text-decoration:none}
+    </style>
+</head>
+<body>
+    <div id="stage">
+        <div id="status">상태: <span id="st">대기 중</span></div>
+        <a class="btn" href="index.html">뒤로</a>
+
+        <div id="left-plat" class="platform"></div>
+        <div id="gap"></div>
+        <div id="right-plat" class="platform"></div>
+
+        <div id="robot">
+            <div class="body"></div>
+            <div class="arm" id="arm"></div>
+        </div>
+        <div class="ground"></div>
+    </div>
+
+    <script>
+        // 간단한 추락 레벨: 왼쪽 플랫폼에서 시작, 오른쪽 플랫폼까지 팔로 당기면 낭떠러지로 떨어짐 여부 확인
+        const robot = document.getElementById('robot');
+        const arm = document.getElementById('arm');
+        const st = document.getElementById('st');
+
+        let x = 120; // left in px
+        let y = 300; // bottom
+        let isReaching = false;
+        let key = null;
+        let reach = 0;
+        const MAX = 220;
+        const SPEED = 6;
+        const GAP_LEFT = 360; // gap start
+        const GAP_RIGHT = GAP_LEFT + 180;
+
+        function setStatus(t){ st.innerText = t; }
+
+        function updateArm(){
+            if(!isReaching) return;
+            if(reach < MAX) reach += SPEED;
+            const armX = 40 + (key === 'd' ? reach : -reach);
+            arm.style.left = armX + 'px';
+            requestAnimationFrame(updateArm);
+        }
+
+        async function pull(){
+            if(reach < 8){ resetArm(); return; }
+            setStatus('이동 중...');
+            // determine target world x
+            const dir = key === 'd' ? 1 : -1;
+            let target = x + dir * reach;
+            // clamp to stage
+            target = Math.max(0, Math.min(target, 820));
+
+            // animate
+            const dur = 400 + Math.max(0, (MAX - reach));
+            robot.style.transition = `left ${dur}ms cubic-bezier(.42,0,.58,1), bottom ${dur}ms linear`;
+            robot.style.left = target + 'px';
+            x = target;
+
+            await new Promise(r=>setTimeout(r,dur));
+
+            // check if robot center is over gap -> fall
+            const center = x + 40;
+            if (center > GAP_LEFT && center < GAP_RIGHT) {
+                // fall
+                fall();
+            } else if (center >= GAP_RIGHT) {
+                // reached right platform -> level complete
+                setStatus('다음 맵으로 이동...', '');
+                setTimeout(() => { window.location.href = 'index.html'; }, 800);
+            } else {
+                setStatus('대기 중');
+            }
+
+            resetArm();
+            robot.style.transition = 'none';
+            reach = 0;
+        }
+
+        function fall(){
+            setStatus('추락!');
+            let vy = 0;
+            const gravity = 0.6;
+            function step(){
+                vy += gravity;
+                y -= vy; // bottom decreases => visually fall
+                robot.style.bottom = y + 'px';
+                if(y < -200){ // fell out
+                    setStatus('리셋 중...');
+                    setTimeout(reset,700);
+                    return;
+                }
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function reset(){
+            x = 120; y = 300; reach = 0; robot.style.left = x + 'px'; robot.style.bottom = y + 'px'; setStatus('대기 중'); robot.style.transition = 'none';
+        }
+
+        function resetArm(){ arm.style.left = '40px'; }
+
+        window.addEventListener('keydown',(e)=>{
+            const k = e.key.toLowerCase();
+            if((k==='a'||k==='d') && !isReaching){ isReaching=true; key=k; reach=0; setStatus('팔 뻗는 중...'); updateArm(); }
+        });
+        window.addEventListener('keyup',(e)=>{
+            const k = e.key.toLowerCase();
+            if(k===key && isReaching){ isReaching=false; pull(); key=null; }
+        });
+
+        // initial place
+        robot.style.left = x + 'px'; robot.style.bottom = y + 'px';
+    </script>
+</body>
+</html>
